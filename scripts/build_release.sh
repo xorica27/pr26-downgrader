@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build and zip a release of PrprojDowngrader.app.
+# Build and zip a release of Pr26 Downgrader.app.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,8 +16,20 @@ PY
 )"
 
 mkdir -p dist
-ZIP="dist/PrprojDowngrader-${VERSION}.zip"
+ZIP="dist/Pr26-Downgrader-${VERSION}-universal.zip"
 rm -f "$ZIP"
-ditto -c -k --keepParent --norsrc --noextattr --noqtn "app/PrprojDowngrader.app" "$ZIP"
+ditto -c -k --keepParent --norsrc --noextattr --noqtn "app/Pr26 Downgrader.app" "$ZIP"
 echo "Created $ZIP"
-shasum -a 256 "$ZIP"
+
+# Drag-to-Applications DMG.
+STAGE="$ROOT/build/dmg"
+DMG="dist/Pr26-Downgrader-${VERSION}-universal.dmg"
+rm -rf "$STAGE" "$DMG"
+mkdir -p "$STAGE"
+ditto --norsrc --noextattr --noqtn "app/Pr26 Downgrader.app" "$STAGE/Pr26 Downgrader.app"
+ln -s /Applications "$STAGE/Applications"
+hdiutil create -quiet -volname "Pr26 Downgrader" -srcfolder "$STAGE" \
+    -ov -format UDZO "$DMG"
+echo "Created $DMG"
+
+shasum -a 256 "$ZIP" "$DMG" | tee "dist/SHA256SUMS.txt"

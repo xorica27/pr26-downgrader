@@ -1,11 +1,11 @@
 #!/bin/bash
-# Build a universal (Apple Silicon + Intel) PrprojDowngrader.app with the
+# Build a universal (Apple Silicon + Intel) Pr26 Downgrader.app with the
 # Python engine and its own Python runtime bundled inside.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$ROOT/.." && pwd)"
-APP="$ROOT/PrprojDowngrader.app"
+APP="$ROOT/Pr26 Downgrader.app"
 BUILD="$REPO/build"
 MIN_MACOS="13.0"
 
@@ -21,11 +21,11 @@ echo "Compiling SwiftUI app (arm64 + x86_64)…"
 for arch in arm64 x86_64; do
     swiftc -O -parse-as-library \
         -target "$arch-apple-macos$MIN_MACOS" \
-        -o "$BUILD/swift/PrprojDowngrader-$arch" \
-        "$ROOT/PrprojDowngrader.swift"
+        -o "$BUILD/swift/Pr26Downgrader-$arch" \
+        "$ROOT/Pr26Downgrader.swift"
 done
-lipo -create "$BUILD/swift/PrprojDowngrader-arm64" "$BUILD/swift/PrprojDowngrader-x86_64" \
-    -output "$APP/Contents/MacOS/PrprojDowngrader"
+lipo -create "$BUILD/swift/Pr26Downgrader-arm64" "$BUILD/swift/Pr26Downgrader-x86_64" \
+    -output "$APP/Contents/MacOS/Pr26Downgrader"
 
 echo "Bundling converter and Python runtime…"
 cp "$ROOT/prproj_downgrade.py" "$ROOT/schema42.json" "$ROOT/AppIcon.icns" "$APP/Contents/Resources/"
@@ -38,17 +38,17 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Prproj Downgrader</string>
+    <string>Pr26 Downgrader</string>
     <key>CFBundleDisplayName</key>
-    <string>Prproj Downgrader</string>
+    <string>Pr26 Downgrader</string>
     <key>CFBundleIdentifier</key>
-    <string>com.xorica27.prprojdowngrader</string>
+    <string>com.xorica27.pr26downgrader</string>
     <key>CFBundleVersion</key>
     <string>$VERSION</string>
     <key>CFBundleShortVersionString</key>
     <string>$VERSION</string>
     <key>CFBundleExecutable</key>
-    <string>PrprojDowngrader</string>
+    <string>Pr26Downgrader</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundlePackageType</key>
@@ -90,4 +90,4 @@ done
 codesign --force --sign - "$APP" 2>/dev/null
 codesign --verify --strict "$APP"
 
-echo "Built: $APP ($VERSION, $(lipo -archs "$APP/Contents/MacOS/PrprojDowngrader"), $(du -sh "$APP" | cut -f1))"
+echo "Built: $APP ($VERSION, $(lipo -archs "$APP/Contents/MacOS/Pr26Downgrader"), $(du -sh "$APP" | cut -f1))"

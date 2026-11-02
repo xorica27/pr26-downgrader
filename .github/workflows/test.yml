@@ -19,8 +19,10 @@ jobs:
       - name: Build universal app
         run: make app
       - name: Check both architectures
+        env:
+          APP: app/Pr26 Downgrader.app
         run: |
-          lipo -archs app/PrprojDowngrader.app/Contents/MacOS/PrprojDowngrader
-          lipo -archs app/PrprojDowngrader.app/Contents/Resources/python/bin/python3.12
-          arch -x86_64 app/PrprojDowngrader.app/Contents/Resources/python/bin/python3 -I -B \
-            app/PrprojDowngrader.app/Contents/Resources/prproj_downgrade.py --version
+          lipo -archs "$APP/Contents/MacOS/Pr26Downgrader"
+          lipo -archs "$APP/Contents/Resources/python/bin/python3.12"
+          arch -x86_64 "$APP/Contents/Resources/python/bin/python3" -I -B \
+            "$APP/Contents/Resources/prproj_downgrade.py" --version

@@ -3,19 +3,19 @@ import AppKit
 import UniformTypeIdentifiers
 
 @main
-struct PrprojDowngraderApp: App {
+struct Pr26DowngraderApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var model = ConverterModel.shared
 
     var body: some Scene {
-        Window("Prproj Downgrader", id: "main") {
+        Window("Pr26 Downgrader", id: "main") {
             ContentView()
                 .environmentObject(model)
         }
         .windowResizability(.contentSize)
         .commands {
             CommandGroup(replacing: .newItem) {
-                Button("Open 2026 Project…") { model.chooseInput() }
+                Button("Open Pr26 Project…") { model.chooseInput() }
                     .keyboardShortcut("o")
             }
         }
@@ -122,7 +122,7 @@ final class ConverterModel: ObservableObject {
 
     func setReference(_ url: URL?) {
         if let url, url == inputURL {
-            notice = "The 2024 version must be a different file from the 2026 project."
+            notice = "The Pr24 version must be a different file from the Pr26 project."
             return
         }
         referenceURL = url
@@ -138,7 +138,7 @@ final class ConverterModel: ObservableObject {
 
     static func defaultOutput(for input: URL) -> URL {
         let base = input.deletingPathExtension().lastPathComponent
-        return input.deletingLastPathComponent().appendingPathComponent(base + "_CC2024.prproj")
+        return input.deletingLastPathComponent().appendingPathComponent(base + "_Pr24.prproj")
     }
 
     private static var projectType: UTType {
@@ -147,7 +147,7 @@ final class ConverterModel: ObservableObject {
 
     func chooseInput() {
         let panel = NSOpenPanel()
-        panel.message = "Choose a Premiere Pro 2026 project"
+        panel.message = "Choose a Premiere Pro 26 project"
         panel.allowedContentTypes = [Self.projectType]
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
@@ -157,7 +157,7 @@ final class ConverterModel: ObservableObject {
 
     func chooseReference() {
         let panel = NSOpenPanel()
-        panel.message = "Choose the Premiere Pro 2024 version of the same edit"
+        panel.message = "Choose the Premiere Pro 24 version of the same edit"
         panel.allowedContentTypes = [Self.projectType]
         if let dir = inputURL?.deletingLastPathComponent() { panel.directoryURL = dir }
         panel.begin { response in
@@ -169,7 +169,7 @@ final class ConverterModel: ObservableObject {
     func chooseOutput() {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [Self.projectType]
-        panel.nameFieldStringValue = outputURL?.lastPathComponent ?? "Project_CC2024.prproj"
+        panel.nameFieldStringValue = outputURL?.lastPathComponent ?? "Project_Pr24.prproj"
         panel.directoryURL = outputURL?.deletingLastPathComponent()
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
@@ -276,7 +276,7 @@ final class ConverterModel: ObservableObject {
     private static func failureMessage(status: Int32, log: String) -> String {
         switch status {
         case 3:
-            return "The 2024 project doesn't match this edit, so it wasn't used. Remove it to run a schema downgrade instead."
+            return "The Pr24 project doesn't match this edit, so it wasn't used. Remove it to run a schema downgrade instead."
         case 4:
             return "The converted file didn't pass verification and shouldn't be used."
         default:
@@ -289,11 +289,11 @@ final class ConverterModel: ObservableObject {
     private static func summarize(_ report: URL) -> Summary {
         guard let data = try? Data(contentsOf: report),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return Summary(title: "Converted", detail: "Open it in Premiere Pro 2024 and check it before use.", warnings: [])
+            return Summary(title: "Converted", detail: "Open it in Premiere Pro 24.1 or later and check it before use.", warnings: [])
         }
         if json["mode"] as? String == "reference-transplant" {
-            return Summary(title: "Matched your 2024 project",
-                           detail: "The edit is identical, so the 2024 file was returned unchanged.",
+            return Summary(title: "Matched your Premiere Pro 24 project",
+                           detail: "The edit is identical, so the 24.1 file was returned unchanged.",
                            warnings: [])
         }
         let changes = json["changes"] as? [String: Any] ?? [:]
@@ -307,9 +307,9 @@ final class ConverterModel: ObservableObject {
         let detail = [
             "\(classes) versions reverted",
             "\(added) fields restored",
-            "\(removed) 2026-only fields removed",
+            "\(removed) Pr26-only fields removed",
         ].joined(separator: " · ")
-        return Summary(title: "Saved as a Premiere Pro 2024 project", detail: detail, warnings: warnings)
+        return Summary(title: "Saved as a Premiere Pro 24.1 project", detail: detail, warnings: warnings)
     }
 }
 
@@ -343,7 +343,7 @@ struct ContentView: View {
 
             DetailsSection()
 
-            Text("Premiere has no official down-save. Always open the result in Premiere Pro 2024 and check it before relying on it.")
+            Text("Premiere has no official down-save. Always open the result in Premiere Pro 24.1 or later and check it before relying on it.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -364,24 +364,24 @@ struct HeaderView: View {
                 .resizable()
                 .frame(width: 56, height: 56)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Prproj Downgrader")
+                Text("Pr26 Downgrader")
                     .font(.title2.weight(.semibold))
-                Text("Open Premiere Pro 2026 projects in Premiere Pro 2024")
+                Text("Converts Premiere Pro 26.0 projects to 24.1")
                     .foregroundStyle(.secondary)
             }
             Spacer()
             HStack(spacing: 6) {
-                Text("2026")
+                Text("Pr26")
                 Image(systemName: "arrow.right")
                     .font(.caption2.weight(.bold))
-                Text("2024")
+                Text("Pr24")
             }
             .font(.callout.weight(.semibold).monospacedDigit())
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(Capsule().fill(Color.accentColor.opacity(0.15)))
             .foregroundStyle(Color.accentColor)
-            .help("Project schema v45 → v42")
+            .help("Premiere Pro 26.0 (project version 45) → 24.1 (project version 42)")
         }
     }
 }
@@ -419,7 +419,7 @@ struct DropZone: View {
             Image(systemName: "film.stack")
                 .font(.system(size: 30, weight: .light))
                 .foregroundStyle(isTargeted ? Color.accentColor : .secondary)
-            Text("Drop a Premiere Pro 2026 project here")
+            Text("Drop a Premiere Pro 26 project here")
                 .font(.headline)
             Text("or click to choose a .prproj file")
                 .font(.callout)
@@ -466,7 +466,7 @@ struct OptionsCard: View {
         VStack(spacing: 0) {
             OptionRow(
                 symbol: "checkmark.shield",
-                title: "2024 version of this edit",
+                title: "Premiere Pro 24 version of this edit",
                 subtitle: model.referenceURL.map { $0.lastPathComponent }
                     ?? "Optional. If you still have it, its content is checked and it's returned as-is — the safest result.",
                 isSet: model.referenceURL != nil

@@ -18,4 +18,4 @@ release: app
 	./scripts/build_release.sh
 
 clean:
-	rm -rf app/PrprojDowngrader.app dist build/swift
+	rm -rf "app/Pr26 Downgrader.app" dist build/swift build/dmg

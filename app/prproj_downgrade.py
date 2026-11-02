@@ -644,7 +644,7 @@ def project_version(tree: ET.ElementTree) -> int | None:
 # ---------------------------------------------------------------------------
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Downgrade a Premiere Pro 2026 project to the 2024 schema.")
+    ap = argparse.ArgumentParser(description="Pr26 Downgrader: convert a Premiere Pro 26.0 project (project version 45) to Premiere Pro 24.1 (project version 42).")
     ap.add_argument("input", type=Path)
     ap.add_argument("output", type=Path)
     ap.add_argument("--reference", type=Path)

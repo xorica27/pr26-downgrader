@@ -1,5 +1,6 @@
 import gzip
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -10,6 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = ROOT / "app" / "prproj_downgrade.py"
 SCHEMA = ROOT / "app" / "schema42.json"
+# Run the engine with another interpreter, e.g. the runtime bundled in the app.
+PYTHON = os.environ.get("PRPROJ_PYTHON", sys.executable)
 
 # Minimal synthetic v45 project. Adobe class IDs only; no real project data.
 SYNTHETIC = """<?xml version="1.0" encoding="UTF-8" ?>
@@ -114,7 +117,7 @@ class DowngradeTests(unittest.TestCase):
         with gzip.open(self.src, "wb") as f:
             f.write(SYNTHETIC.encode("utf-8"))
         result = subprocess.run(
-            [sys.executable, str(ENGINE), str(self.src), str(self.out),
+            [PYTHON, "-I", "-B", str(ENGINE), str(self.src), str(self.out),
              "--schema", str(SCHEMA), "--report", str(self.report), "--quiet"],
             capture_output=True, text=True,
         )
@@ -131,6 +134,17 @@ class DowngradeTests(unittest.TestCase):
 
     def test_project_version(self):
         self.assertEqual(self.objects["1"].attrib["Version"], "42")
+
+    def test_damaged_input_is_rejected(self):
+        broken = self.dir / "broken.prproj"
+        broken.write_bytes(b"not a project")
+        result = subprocess.run(
+            [PYTHON, "-I", "-B", str(ENGINE), str(broken), str(self.dir / "x.prproj")],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("could not read", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
 
     def test_colour_space_converted(self):
         vtg = self.objects["3"]

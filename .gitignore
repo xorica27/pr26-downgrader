@@ -18,3 +18,6 @@ build/
 *.zip
 *.log
 *.tmp
+
+# Icon build scratch
+AppIcon.iconset/

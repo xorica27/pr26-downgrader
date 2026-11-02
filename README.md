@@ -1,14 +1,49 @@
-# Prproj Downgrader
+<p align="center">
+  <img src="docs/icon.png" width="128" alt="Prproj Downgrader icon">
+</p>
 
-A macOS app and CLI that down-saves an Adobe Premiere Pro **2026** project
-(project schema **v45**) into the **2024** layout (project schema **v42**).
+<h1 align="center">Prproj Downgrader</h1>
+
+<p align="center">
+  Open Premiere Pro <b>2026</b> projects in Premiere Pro <b>2024</b>.<br>
+  A macOS app and CLI that down-saves a <code>.prproj</code> from project schema v45 to v42.
+</p>
+
+<p align="center">
+  <a href="https://github.com/xorica27/prproj-downgrader/actions/workflows/test.yml"><img src="https://github.com/xorica27/prproj-downgrader/actions/workflows/test.yml/badge.svg" alt="tests"></a>
+  <img src="https://img.shields.io/badge/macOS-13%2B-blue" alt="macOS 13+">
+  <img src="https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-universal-blueviolet" alt="Universal">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT"></a>
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" width="600" alt="Prproj Downgrader window">
+</p>
 
 Premiere has no built-in down-save. This tool rebuilds the 2024 schema from the
-2026 object graph. It is a best-effort transform: keep the original, open the
-result in Premiere 2024, and verify before using it for real work.
+2026 object graph. It is a best-effort transform: your original is never
+modified, and you should open the result in Premiere 2024 and check it before
+using it for real work.
 
 > Not affiliated with Adobe. Premiere Pro is a trademark of Adobe Inc.
 > This repository contains no project files, media, or personal data.
+
+---
+
+## Download
+
+1. Grab `PrprojDowngrader-<version>.zip` from
+   [Releases](https://github.com/xorica27/prproj-downgrader/releases) and unzip it.
+2. Move **PrprojDowngrader.app** to Applications.
+3. First launch: the app is not notarised by Apple, so **right-click → Open**,
+   then **Open** again. (Or: System Settings → Privacy & Security → Open Anyway.)
+
+Runs on macOS 13 or newer, on Apple Silicon and Intel. Python is built in;
+nothing else needs installing.
+
+**Use it:** drop a `.prproj` on the window (or on the Dock icon, or use
+Finder → Open With), press **Convert**, then **Show in Finder**. The result is
+saved next to the original as `<name>_CC2024.prproj`.
 
 ---
 
@@ -24,23 +59,23 @@ the editorial content differs.
 
 ---
 
-## Build and run
+## Build from source
 
-Requirements: macOS 13+, Xcode command-line tools (`swiftc`), Python 3.9+.
+Requirements: macOS 13+, Xcode command-line tools (`swiftc`, `lipo`), Python 3.9+
+for the tests and CLI.
 
 ```bash
-make app          # builds app/PrprojDowngrader.app
+make app          # universal app/PrprojDowngrader.app
 open app/PrprojDowngrader.app
-```
-
-Or build and zip a release:
-
-```bash
 make release      # -> dist/PrprojDowngrader-<version>.zip
 ```
 
-The app calls `python3` from `PATH`; the converter and schema profile are bundled
-inside `Contents/Resources`.
+`make app` downloads a pinned, SHA-256-verified standalone CPython 3.12 for
+arm64 and x86_64 from
+[python-build-standalone](https://github.com/astral-sh/python-build-standalone),
+trims it, merges both into one universal runtime (cached in `build/`), and
+bundles it in `Contents/Resources/python` with the converter and schema profile.
+The app runs only that bundled runtime, never a system `python3`.
 
 ---
 
@@ -50,7 +85,7 @@ inside `Contents/Resources`.
 python3 app/prproj_downgrade.py INPUT.prproj OUTPUT.prproj [options]
 ```
 
-Options:
+Requires Python 3.9+ (standard library only). Options:
 
 ```
 --reference PATH   2024 .prproj of the same edit (content-matched transplant)
@@ -75,7 +110,8 @@ python3 app/prproj_downgrade.py INPUT.prproj OUTPUT.prproj \
 ```
 
 The CLI refuses to overwrite the input or the reference. Exit codes:
-`0` success, `2` bad arguments, `3` reference mismatch, `4` verification failure.
+`0` success, `2` bad arguments or unreadable input, `3` reference mismatch,
+`4` verification failure.
 
 ---
 
@@ -126,7 +162,8 @@ it keeps the 2026 project's object IDs and some UI state.
 Run the tests with:
 
 ```bash
-make test
+make test           # with your python3
+make test-bundled   # with the runtime that ships inside the app
 ```
 
 The test suite builds a tiny synthetic v45 project and checks every transform.
@@ -157,18 +194,26 @@ No real project data is included.
 app/
   prproj_downgrade.py       # Python engine + CLI
   PrprojDowngrader.swift    # SwiftUI macOS app
-  build_app.sh              # builds PrprojDowngrader.app
+  build_app.sh              # builds the universal PrprojDowngrader.app
   schema42.json             # 24.1 field order + parameter-type profile
   AppIcon.icns              # app icon
 scripts/
+  fetch_python.sh           # pinned universal Python runtime for the app
   build_release.sh          # zipped .app release
   make_icon.swift           # regenerates AppIcon.icns
 tests/
   test_downgrade.py         # synthetic-project unit tests
+docs/                       # README images
 Makefile
 ```
 
 Regenerate the icon with `make icon` (requires `swift` and `iconutil`).
 
 No `.prproj`, media, XML fixtures, reports, or personal paths are tracked.
-`make release` and the built `.app` are ignored by Git.
+`make release`, the built `.app` and `build/` are ignored by Git.
+
+---
+
+## License
+
+[MIT](LICENSE)

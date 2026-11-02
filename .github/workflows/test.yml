@@ -9,7 +9,18 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Run unit tests
-        run: python3 -m unittest discover -s tests -v
-      - name: Build app bundle
-        run: ./app/build_app.sh
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Engine tests (system Python)
+        run: make test
+      - name: Engine tests (bundled runtime)
+        run: make test-bundled
+      - name: Build universal app
+        run: make app
+      - name: Check both architectures
+        run: |
+          lipo -archs app/PrprojDowngrader.app/Contents/MacOS/PrprojDowngrader
+          lipo -archs app/PrprojDowngrader.app/Contents/Resources/python/bin/python3.12
+          arch -x86_64 app/PrprojDowngrader.app/Contents/Resources/python/bin/python3 -I -B \
+            app/PrprojDowngrader.app/Contents/Resources/prproj_downgrade.py --version

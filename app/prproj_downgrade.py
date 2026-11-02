@@ -676,7 +676,12 @@ def main(argv=None) -> int:
     elif not args.quiet:
         log(f"warning: schema profile not found at {args.schema}; using built-in heuristics only")
 
-    inp = parse_project(args.input)
+    try:
+        inp = parse_project(args.input)
+    except (ET.ParseError, OSError, EOFError) as exc:
+        print(f"error: could not read {args.input.name}: not a Premiere project, or the file is damaged ({exc})",
+              file=sys.stderr)
+        return 2
     in_version = project_version(inp)
     report = {"input": str(args.input), "output": str(args.output),
               "input_project_version": in_version, "target_version": TARGET_VERSION}

@@ -1,0 +1,20 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+
+# Adobe project/media artifacts — never commit these
+*.prproj
+*.prproj.report.json
+*.prin
+*.xml
+*.aep
+*.mogrt
+
+# Build artifacts
+*.app
+dist/
+build/
+*.zip
+*.log
+*.tmp

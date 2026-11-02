@@ -29,7 +29,7 @@ fetch() {  # arch sha
     local name="cpython-$PY_VERSION+$PBS_RELEASE-$arch-apple-darwin-install_only_stripped.tar.gz"
     local file="$CACHE/$name"
     if [ ! -f "$file" ]; then
-        echo "Downloading $name…" >&2
+        echo "Downloading ${name}…" >&2
         curl -fsSL --retry 3 -o "$file.part" \
             "https://github.com/astral-sh/python-build-standalone/releases/download/$PBS_RELEASE/$name"
         mv "$file.part" "$file"
